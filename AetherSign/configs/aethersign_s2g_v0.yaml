@@ -1,0 +1,241 @@
+task: S2G
+device: cuda
+do_translation: false
+do_recognition: true
+
+data:
+  dataset_root: ../dataset
+  label_dir: ../dataset/label
+  npy_dir: ../dataset/npy
+  train_label_path: ../dataset/label/train.csv
+  dev_label_path: ../dataset/label/dev.csv
+  test_label_path: ../dataset/label/test.csv
+  gloss_map_path: ../dataset/label/gloss_map.txt
+  num_keypoints: 65
+  keypoint_format: CTV
+  coord_space: normalized_image
+  convert_to_centered_coords: true
+  random_rotate_degree: 15.0
+  time_augment_min: 0.5
+  time_augment_max: 1.5
+  max_length: 400
+  dataset_name: AetherSign
+  input_streams: keypoint
+  level: word
+  txt_lowercase: false
+  max_sent_length: 400
+
+gloss:
+  gloss2id_file: ../dataset/label/gloss2ids.pkl
+  lower_case: false
+
+testing:
+  recognition:
+    beam_size: 5
+    prediction_head: ensemble_last
+    report_heads:
+      - ensemble_last
+      - fuse
+      - body
+      - left
+      - right
+  translation: {}
+
+training:
+  model_dir: ../outputs/aethersign_mska_s2g_v0
+  batch_size: 8
+  epochs: 100
+  num_workers: 4
+  validation:
+    recognition:
+      beam_size: 1
+    translation: {}
+  optimization:
+    optimizer: Adam
+    learning_rate:
+      default: 1.0e-3
+    weight_decay: 0.001
+    betas:
+      - 0.9
+      - 0.998
+    scheduler: cosineannealing
+    t_max: 100
+
+model:
+  RecognitionNetwork:
+    input_type: keypoint
+    DSTA-Net:
+      net:
+        - [64, 64, 16, 7, 2]
+        - [64, 64, 16, 3, 1]
+        - [64, 128, 32, 3, 1]
+        - [128, 128, 32, 3, 1]
+        - [128, 256, 64, 3, 2]
+        - [256, 256, 64, 3, 1]
+        - [256, 256, 64, 3, 1]
+        - [256, 256, 64, 3, 1]
+      body:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        - 20
+        - 21
+        - 22
+        - 23
+        - 24
+        - 25
+        - 26
+        - 27
+        - 28
+        - 29
+        - 30
+        - 31
+        - 32
+        - 33
+        - 34
+        - 35
+        - 36
+        - 37
+        - 38
+        - 39
+        - 40
+        - 41
+        - 42
+        - 43
+        - 44
+        - 45
+        - 46
+        - 47
+        - 48
+        - 49
+        - 50
+        - 51
+        - 52
+        - 53
+        - 54
+        - 55
+        - 56
+        - 57
+        - 58
+        - 59
+        - 60
+        - 61
+        - 62
+        - 63
+        - 64
+      left:
+        - 0
+        - 2
+        - 7
+        - 11
+        - 13
+        - 15
+        - 23
+        - 24
+        - 25
+        - 26
+        - 27
+        - 28
+        - 29
+        - 30
+        - 31
+        - 32
+        - 33
+        - 34
+        - 35
+        - 36
+        - 37
+        - 38
+        - 39
+        - 40
+        - 41
+        - 42
+        - 43
+      right:
+        - 0
+        - 5
+        - 8
+        - 12
+        - 14
+        - 16
+        - 44
+        - 45
+        - 46
+        - 47
+        - 48
+        - 49
+        - 50
+        - 51
+        - 52
+        - 53
+        - 54
+        - 55
+        - 56
+        - 57
+        - 58
+        - 59
+        - 60
+        - 61
+        - 62
+        - 63
+        - 64
+      face:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+      mouth:
+        - 9
+        - 10
+    GlossTokenizer:
+      gloss2id_file: ../dataset/label/gloss2ids.pkl
+      lower_case: false
+    body_visual_head:
+      input_size: 256
+      hidden_size: 512
+      ff_size: 2048
+      pe: true
+      ff_kernelsize: [3, 3]
+    fuse_visual_head:
+      input_size: 1024
+      hidden_size: 512
+      ff_size: 2048
+      pe: true
+      ff_kernelsize: [3, 3]
+    left_visual_head:
+      input_size: 512
+      hidden_size: 512
+      ff_size: 2048
+      pe: true
+      ff_kernelsize: [3, 3]
+    right_visual_head:
+      input_size: 512
+      hidden_size: 512
+      ff_size: 2048
+      pe: true
+      ff_kernelsize: [3, 3]
+    cross_distillation: true
